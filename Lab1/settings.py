@@ -1,9 +1,11 @@
 # settings.py
 from pydantic import field_validator
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env.test", env_file_encoding="utf-8")
+
     ENVIRONMENT: str
     APP_NAME: str
     api_key: str
