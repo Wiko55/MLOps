@@ -1,8 +1,10 @@
+from api.models import PredictRequest, PredictResponse
 from fastapi import FastAPI
-from fastapi.testclient import TestClient
+from joblib import load
 
 app = FastAPI()
-client = TestClient(app)
+model = load("model.joblib")
+classes = ["setosa", "versicolor", "virginica"]
 
 
 @app.get("/")
@@ -15,14 +17,16 @@ def health_check():
     return {"status": "ok"}
 
 
-# testy
-def welcome_root_test():
-    response = client.get("/")
-    assert response.status_code == 200
-    assert response.json() == {"message": "Welcome to the ML API"}
-
-
-def health_check_test():
-    response = client.get("/health")
-    assert response.status_code == 200
-    assert response.json() == {"status": "ok"}
+@app.post("/predict")
+def predict(request: PredictRequest) -> PredictResponse:  # LLM
+    prediction_index = model.predict(
+        [
+            [
+                request.sepal_length,
+                request.sepal_width,
+                request.petal_length,
+                request.petal_width,
+            ]
+        ]
+    )[0]
+    return PredictResponse(prediction=classes[int(prediction_index)])
